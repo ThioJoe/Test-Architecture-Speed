@@ -15,6 +15,11 @@ namespace Results_Comparer
     internal class Program
     {
 
+        public static string x64FileName;
+        public static string x86FileName;
+        public static string x64Path;
+        public static string x86Path;
+
         [DataContract]
         private class Result
         {
@@ -39,21 +44,21 @@ namespace Results_Comparer
         static void Main(string[] args)
         {
             // File names
-            string x64FileName = "Results64bit.json";
-            string x86FileName = "Results32bit.json";
+            x64FileName = "Results64bit.json";
+            x86FileName = "Results32bit.json";
 
             if (Debugger.IsAttached)
             {
-                x64FileName = "Results64bit_debug.json";
-                x86FileName = "Results32bit_debug.json";
+                //x64FileName = "Results64bit_debug.json";
+                //x86FileName = "Results32bit_debug.json";
             }
 
             // Root path with the results files
             string rootPath = "D:\\Users\\Joe\\Documents\\Development\\Test-Architecture-Speed";
 
             // Check hard coded paths first
-            string x64Path = FindFile(rootPath, x64FileName);
-            string x86Path = FindFile(rootPath, x86FileName);
+            x64Path = FindFile(rootPath, x64FileName);
+            x86Path = FindFile(rootPath, x86FileName);
 
             if (x64Path == null || x86Path == null)
             {
@@ -87,34 +92,38 @@ namespace Results_Comparer
             // Compare the results
             CompareResults(x64Results, x86Results);
 
-            Console.WriteLine("Press any key to exit");
+            Console.WriteLine("\n\nPress any key to exit");
             Console.ReadLine();
 
         }
 
         static void CompareResults(List<Result> x64Results, List<Result> x86Results)
         {
-
-            // For each test, get the average of the results of the runs. See which was faster and by what percentage
-            // Assume same number of tests in both lists
-
-            // Local function
-            List<TestResult> GetResultsList(List<Result> results)
+            // Local function to get average results grouped by TestName
+            List<TestResult> GetAverageResultsList(List<Result> results)
             {
-                List<TestResult> testResults = new List<TestResult>();
-                foreach (Result result in results)
-                {
-                    TestResult testResult = new TestResult();
-                    testResult.TestName = result.TestName;
-                    testResult.AverageResult = result.TestResultValue;
-                    testResult.ResultUnit = result.TestResultUnit;
-                    testResults.Add(testResult);
-                }
-                return testResults;
+                return results
+                    .GroupBy(r => new { r.TestName, r.TestResultUnit })
+                    .Select(g => new TestResult
+                    {
+                        TestName = g.Key.TestName,
+                        AverageResult = g.Average(r => r.TestResultValue),
+                        ResultUnit = g.Key.TestResultUnit
+                    })
+                    .ToList();
             }
 
-            List<TestResult> x64TestResults = GetResultsList(x64Results);
-            List<TestResult> x86TestResults = GetResultsList(x86Results);
+            List<TestResult> x64TestResults = GetAverageResultsList(x64Results);
+            List<TestResult> x86TestResults = GetAverageResultsList(x86Results);
+
+            // Print file locations
+            Console.WriteLine("x64 results file: {0}", x64Path);
+            Console.WriteLine("x86 results file: {0}", x86Path);
+            Console.WriteLine("\n\n");
+
+            // Print table header
+            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,20}", "Test Name", "x64 Avg", "x86 Avg", "Difference");
+            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,20}", new string('-', 30), new string('-', 16), new string('-', 16), new string('-', 20));
 
             // Compare the results
             for (int i = 0; i < x64TestResults.Count; i++)
@@ -128,20 +137,28 @@ namespace Results_Comparer
                     return;
                 }
 
+                string difference;
                 if (x64TestResult.AverageResult < x86TestResult.AverageResult)
                 {
-                    Console.WriteLine($"{x64TestResult.TestName} was faster on x64 by {Math.Round((x86TestResult.AverageResult - x64TestResult.AverageResult) / x86TestResult.AverageResult * 100, 2)}%");
+                    string diff = $"{Math.Round((x86TestResult.AverageResult - x64TestResult.AverageResult) / x86TestResult.AverageResult * 100, 2)}";
+                    difference = $"x64 faster by {diff}%";
                 }
                 else if (x64TestResult.AverageResult > x86TestResult.AverageResult)
                 {
-                    Console.WriteLine($"{x64TestResult.TestName} was faster on x86 by {Math.Round((x64TestResult.AverageResult - x86TestResult.AverageResult) / x64TestResult.AverageResult * 100, 2)}%");
+                    string diff = $"{Math.Round((x64TestResult.AverageResult - x86TestResult.AverageResult) / x64TestResult.AverageResult * 100, 2)}";
+                    difference = $"x86 faster by {diff}%";
                 }
                 else
                 {
-                    Console.WriteLine($"{x64TestResult.TestName} had the same average result on both x64 and x86");
+                    difference = "Same average result";
                 }
-            }
 
+                Console.WriteLine("{0,-30} | {1,10:F2} {2,-5} | {3,10:F2} {4,-5} | {5,20}",
+                    x64TestResult.TestName,
+                    x64TestResult.AverageResult, x64TestResult.ResultUnit,
+                    x86TestResult.AverageResult, x86TestResult.ResultUnit,
+                    difference);
+            }
         }
 
         static string FindFile(string rootPath, string fileName)

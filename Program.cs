@@ -15,7 +15,7 @@ class Program
     private const int LIST_SIZE = 10000;
     private const int TREE_SIZE = 100000;
 
-    private const float test_intensity = 0.1F;
+    private const float test_intensity = 1F;
 
     private const int TEST_COUNT = 3;
 
@@ -144,28 +144,31 @@ class Program
         //if (seconds >= 1 || seconds >= 0.001M)
         //{
         //    unit = "s";
-        //    value = seconds.ToString("0.000");
+        //    value = seconds;
+        //    valueStr = seconds.ToString("0.000");
+        //}
+        //else if (seconds >= 1 || seconds >= 0.001M) // milliseconds range
+        //{
+        //    unit = "ms";
+        //    value = (seconds * 1000);
+        //    valueStr = (seconds * 1000).ToString("0.000");
+        //}
+        //else if (seconds >= 0.000001M) // microseconds range
+        //{
+        //    unit = "μs";
+        //    value = (seconds * 1000000);
+        //    valueStr = (seconds * 1000000).ToString("0.000");
+        //}
+        //else // nanoseconds range
+        //{
+        //    unit = "ns";
+        //    value = (seconds * 1000000000);
+        //    valueStr = (seconds * 1000000000).ToString("0.000");
         //}
 
-        // Use minimum resolution unit in milliseconds
-        if (seconds >= 1 || seconds >= 0.001M) // milliseconds range
-        {
-            unit = "ms";
-            value = (seconds * 1000);
-            valueStr = (seconds * 1000).ToString("0.000");
-        }
-        else if (seconds >= 0.000001M) // microseconds range
-        {
-            unit = "μs";
-            value = (seconds * 1000000);
-            valueStr = (seconds * 1000000).ToString("0.000");
-        }
-        else // nanoseconds range
-        {
-            unit = "ns";
-            value = (seconds * 1000000000);
-            valueStr = (seconds * 1000000000).ToString("0.000");
-        }
+        unit = "ms";
+        value = (seconds * 1000);
+        valueStr = (seconds * 1000).ToString("0.000");
 
         // Format it so the decimal points and units are lined up
         string resultStr = $"{valueStr.PadLeft(8)} {unit}";
