@@ -16,8 +16,32 @@ class Program
     private const int TREE_SIZE = 100000;
 
     private const float test_intensity = 1F;
-
     private const int TEST_COUNT = 3;
+
+    // ---------------------------------------------------------
+
+    private static List<Result> ResultsList = new List<Result>();
+    private static float _test_intensity;
+    private static int _ITERATIONS;
+    private static int _LIST_SIZE;
+    private static int _TREE_SIZE;
+
+    // -----------------------------------
+    private static void SetTestParams()
+    {
+        if (Debugger.IsAttached)
+        {
+            _test_intensity = 0.1F;
+        }
+        else
+        {
+            _test_intensity = test_intensity;
+        }
+
+        _ITERATIONS = (int)Math.Round(ITERATIONS * _test_intensity);
+        _LIST_SIZE = (int)Math.Round(LIST_SIZE * _test_intensity);
+        _TREE_SIZE = (int)Math.Round(TREE_SIZE * _test_intensity);
+    }
 
     [DataContract]
     private class Result
@@ -32,16 +56,10 @@ class Program
         public int RunNumber { get; set; }
     }
 
-    private static List<Result> ResultsList = new List<Result>();
-
-    // -----------------------------------
-
-    private static int _ITERATIONS = (int)Math.Round(ITERATIONS * test_intensity);
-    private static int _LIST_SIZE = (int)Math.Round(LIST_SIZE * test_intensity);
-    private static int _TREE_SIZE = (int)Math.Round(LIST_SIZE * test_intensity);
-
     static void Main(string[] args)
     {
+        SetTestParams();
+
         Console.WriteLine($"Running on {(Environment.Is64BitProcess ? "64-bit" : "32-bit")} process");
         Console.WriteLine($"Pointer size: {Marshal.SizeOf(typeof(IntPtr))} bytes");
         Console.WriteLine(CheckIfHiResolutionTimer());

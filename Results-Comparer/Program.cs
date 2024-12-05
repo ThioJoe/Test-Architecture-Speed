@@ -165,13 +165,13 @@ namespace Results_Comparer
                 if (x64TestResult.AverageResult < x86TestResult.AverageResult)
                 {
                     string diff = $"{Math.Round((x86TestResult.AverageResult - x64TestResult.AverageResult) / x86TestResult.AverageResult * 100, 2)}%";
-                    x86Faster = "√";
+                    x64Faster = "√";
                     difference = diff;
                 }
                 else if (x64TestResult.AverageResult > x86TestResult.AverageResult)
                 {
                     string diff = $"{Math.Round((x64TestResult.AverageResult - x86TestResult.AverageResult) / x64TestResult.AverageResult * 100, 2)}%";
-                    x64Faster = "√";
+                    x86Faster = "√";
                     difference = diff;
                 }
                 else
