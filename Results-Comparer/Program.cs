@@ -122,9 +122,29 @@ namespace Results_Comparer
             Console.WriteLine("\n\n");
 
             // Print table header
-            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,15} | {4,20}", "Test Name", "x64 Avg", "x86 Avg", "Winner", "Difference");
-            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,6} | {4,6} | {5,20}", "", "", "", "x64", "x86", "");
-            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,6} | {4,6} | {5,20}", new string('-', 30), new string('-', 16), new string('-', 16), new string('-', 6), new string('-', 6), new string('-', 20));
+            Console.WriteLine("{0} | {1} | {2} | {3} | {4}",
+                "Test Name".PadLeft((30 + 9) / 2).PadRight(30),    // (30 + 9) / 2 = 19.5 -> 19 spaces before
+                "x64 Avg".PadLeft(8 + (16 - 8) / 2).PadRight(16),
+                "x86 Avg".PadLeft(8 + (16 - 8) / 2).PadRight(16),
+                "Winner".PadLeft(7 + (15 - 7) / 2).PadRight(15),
+                "Difference".PadLeft(10 + (20 - 10) / 2).PadRight(20));
+
+            Console.WriteLine("{0} | {1} | {2} | {3} | {4} | {5}",
+                "".PadRight(30),
+                "".PadRight(16),
+                "".PadRight(16),
+                "x64".PadLeft(3 + (6 - 3) / 2).PadRight(6),           // Center in 6 chars
+                "x86".PadLeft(3 + (6 - 3) / 2).PadRight(6),           // Center in 6 chars
+                "".PadRight(20));
+
+            // Separator line remains the same
+            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,6} | {4,6} | {5,20}",
+                new string('-', 30),
+                new string('-', 16),
+                new string('-', 16),
+                new string('-', 6),
+                new string('-', 6),
+                new string('-', 20));
 
             // Compare the results
             for (int i = 0; i < x64TestResults.Count; i++)
