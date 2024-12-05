@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35507.96 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-Architecture-Speed", "Test-Architecture-Speed.csproj", "{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Results-Comparer", "Results-Comparer\Results-Comparer.csproj", "{14381933-E153-4EF6-9ACB-AEF797D220BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}.Release|x64.Build.0 = Release|x64
 		{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}.Release|x86.ActiveCfg = Release|x86
 		{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}.Release|x86.Build.0 = Release|x86
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Debug|x86.Build.0 = Debug|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Release|x64.Build.0 = Release|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Release|x86.ActiveCfg = Release|Any CPU
+		{14381933-E153-4EF6-9ACB-AEF797D220BF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Xml;
 
 class Program
 {
@@ -11,10 +15,24 @@ class Program
     private const int LIST_SIZE = 10000;
     private const int TREE_SIZE = 100000;
 
-    private const float test_intensity = 0.3F;
+    private const float test_intensity = 0.1F;
 
     private const int TEST_COUNT = 3;
 
+    [DataContract]
+    private class Result
+    {
+        [DataMember]
+        public string TestName { get; set; }
+        [DataMember]
+        public decimal TestResultValue { get; set; }
+        [DataMember]
+        public string TestResultUnit { get; set; }
+        [DataMember]
+        public int RunNumber { get; set; }
+    }
+
+    private static List<Result> ResultsList = new List<Result>();
 
     // -----------------------------------
 
@@ -32,22 +50,45 @@ class Program
         for (int i = 0; i < TEST_COUNT; i++)
         {
             Console.WriteLine($"Test run {i + 1}:");
-            RunAllTests();
+            RunAllTests(i+1);
             Console.WriteLine();
         }
+
+        SaveJsonToFile(ResultsList);
 
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
     }
 
-    static void RunAllTests()
+    static void RunAllTests(int runNum)
     {
+        void AddResultGetString(Result resultVal, string testName)
+        {
+            resultVal.TestName = testName;
+            resultVal.RunNumber = runNum;
+            ResultsList.Add(resultVal);
+        }
+
         Dictionary<string, string> testResultDict = new Dictionary<string, string>();
-        testResultDict["LinkedList Traversal"] = TestLinkedListTraversal();
-        testResultDict["Object Allocation"] = TestObjectAllocation();
-        testResultDict["String Manipulation"] = TestStringManipulation();
-        testResultDict["Binary Tree Operations"] = TestBinaryTreeOperations();
-        testResultDict["Dictionary Operations"] = TestDictionaryOperations();
+        var r = TestLinkedListTraversal();
+        AddResultGetString(r.resultVal, "LinkedList Traversal");
+        testResultDict["LinkedList Traversal"] = r.resultStr;
+
+        r = TestObjectAllocation();
+        AddResultGetString(r.resultVal, "Object Allocation");
+        testResultDict["Object Allocation"] = r.resultStr;
+
+        r = TestStringManipulation();
+        AddResultGetString(r.resultVal, "String Manipulation");
+        testResultDict["String Manipulation"] = r.resultStr;
+
+        r = TestBinaryTreeOperations();
+        AddResultGetString(r.resultVal, "Binary Tree Operations");
+        testResultDict["Binary Tree Operations"] = r.resultStr;
+
+        r = TestDictionaryOperations();
+        AddResultGetString(r.resultVal, "Dictionary Operations");
+        testResultDict["Dictionary Operations"] = r.resultStr;
 
         // Display the results with the values lined up
         int maxKeyLength = testResultDict.Keys.Max(k => k.Length);
@@ -55,7 +96,25 @@ class Program
         {
             Console.WriteLine($"{kvp.Key.PadRight(maxKeyLength)}: {kvp.Value}");
         }
+    }
 
+    private static void SaveJsonToFile(List<Result> resultList)
+    {
+        string fileNameBase = Environment.Is64BitProcess ? "Results64bit" : "Results32bit";
+        string fileName;
+        // If in debug mode, add _debug to the filename
+        if (Debugger.IsAttached)
+            fileNameBase += "_debug";
+
+        fileName = $"{fileNameBase}.json";
+
+        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(List<Result>));
+
+        using (FileStream fs = new FileStream(fileName, FileMode.Create))
+        using (XmlDictionaryWriter writer = JsonReaderWriterFactory.CreateJsonWriter(fs, Encoding.UTF8, true, true, "  "))
+        {
+            ser.WriteObject(writer, resultList);
+        }
     }
 
     // P/Invoke signature for QueryPerformanceFrequency
@@ -74,12 +133,13 @@ class Program
         return message;
     }
 
-    static string CreateStopwatchDisplayString(long ticks)
+    static (string resultStr, Result resultVal) CreateStopwatchDisplayString(long ticks)
     {
         // First convert to seconds
         decimal seconds = ticks / (decimal)Stopwatch.Frequency;
         string unit;
-        string value;
+        decimal value;
+        string valueStr;
 
         //if (seconds >= 1 || seconds >= 0.001M)
         //{
@@ -91,25 +151,35 @@ class Program
         if (seconds >= 1 || seconds >= 0.001M) // milliseconds range
         {
             unit = "ms";
-            value = (seconds * 1000).ToString("0.000");
+            value = (seconds * 1000);
+            valueStr = (seconds * 1000).ToString("0.000");
         }
         else if (seconds >= 0.000001M) // microseconds range
         {
             unit = "μs";
-            value = (seconds * 1000000).ToString("0.000");
+            value = (seconds * 1000000);
+            valueStr = (seconds * 1000000).ToString("0.000");
         }
         else // nanoseconds range
         {
             unit = "ns";
-            value = (seconds * 1000000000).ToString("0.000");
+            value = (seconds * 1000000000);
+            valueStr = (seconds * 1000000000).ToString("0.000");
         }
 
         // Format it so the decimal points and units are lined up
-        string resultStr = $"{value.PadLeft(8)} {unit}";
-        return resultStr;
+        string resultStr = $"{valueStr.PadLeft(8)} {unit}";
+
+        Result result = new Result
+        {
+            TestResultValue = value,
+            TestResultUnit = unit
+        };
+
+        return (resultStr, result);
     }
 
-    static string TestLinkedListTraversal()
+    static (string resultStr, Result resultVal) TestLinkedListTraversal()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -132,11 +202,11 @@ class Program
 
         stopwatch.Stop();
 
-        string resultStr = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
-        return resultStr;
+        (string resultStr, Result resultVal) = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
+        return (resultStr, resultVal);
     }
 
-    static string TestObjectAllocation()
+    static (string resultStr, Result resultVal) TestObjectAllocation()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -150,11 +220,11 @@ class Program
         }
 
         stopwatch.Stop();
-        string resultStr = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
-        return resultStr;
+        (string resultStr, Result resultVal) = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
+        return (resultStr, resultVal);
     }
 
-    static string TestStringManipulation()
+    static (string resultStr, Result resultVal) TestStringManipulation()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -170,11 +240,11 @@ class Program
         }
 
         stopwatch.Stop();
-        string resultStr = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
-        return resultStr;
+        (string resultStr, Result resultVal) = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
+        return (resultStr, resultVal);
     }
 
-    static string TestBinaryTreeOperations()
+    static (string resultStr, Result resultVal) TestBinaryTreeOperations()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -197,11 +267,11 @@ class Program
         }
 
         stopwatch.Stop();
-        string resultStr = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
-        return resultStr;
+        (string resultStr, Result resultVal) = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
+        return (resultStr, resultVal);
     }
 
-    static string TestDictionaryOperations()
+    static (string resultStr, Result resultVal) TestDictionaryOperations()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -232,8 +302,8 @@ class Program
         }
 
         stopwatch.Stop();
-        string resultStr = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
-        return resultStr;
+        (string resultStr, Result resultVal) = CreateStopwatchDisplayString(stopwatch.ElapsedTicks);
+        return (resultStr, resultVal);
     }
 }
 
