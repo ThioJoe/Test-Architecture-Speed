@@ -153,7 +153,7 @@ namespace Results_Comparer
                     difference = "Same average result";
                 }
 
-                Console.WriteLine("{0,-30} | {1,10:F2} {2,-5} | {3,10:F2} {4,-5} | {5,20}",
+                Console.WriteLine("{0,-30} | {1,10:F2} {2,-5} | {3,10:F2} {4,-5} | {5,-20}",
                     x64TestResult.TestName,
                     x64TestResult.AverageResult, x64TestResult.ResultUnit,
                     x86TestResult.AverageResult, x86TestResult.ResultUnit,
