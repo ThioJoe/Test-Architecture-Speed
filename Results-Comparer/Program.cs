@@ -122,8 +122,8 @@ namespace Results_Comparer
             Console.WriteLine("\n\n");
 
             // Print table header
-            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,20}", "Test Name", "x64 Avg", "x86 Avg", "Difference");
-            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,20}", new string('-', 30), new string('-', 16), new string('-', 16), new string('-', 20));
+            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,12} | {4,12} | {5,20}", "Test Name", "x64 Avg", "x86 Avg", "x64 Faster", "x86 Faster", "Difference");
+            Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,12} | {4,12} | {5,20}", new string('-', 30), new string('-', 16), new string('-', 16), new string('-', 12), new string('-', 12), new string('-', 20));
 
             // Compare the results
             for (int i = 0; i < x64TestResults.Count; i++)
@@ -137,26 +137,33 @@ namespace Results_Comparer
                     return;
                 }
 
-                string difference;
+                string x64Faster = "";
+                string x86Faster = "";
+                string difference = "";
+
                 if (x64TestResult.AverageResult < x86TestResult.AverageResult)
                 {
-                    string diff = $"{Math.Round((x86TestResult.AverageResult - x64TestResult.AverageResult) / x86TestResult.AverageResult * 100, 2)}";
-                    difference = $"x64 faster by {diff}%";
+                    string diff = $"{Math.Round((x86TestResult.AverageResult - x64TestResult.AverageResult) / x86TestResult.AverageResult * 100, 2)}%";
+                    x64Faster = "✓";
+                    difference = diff;
                 }
                 else if (x64TestResult.AverageResult > x86TestResult.AverageResult)
                 {
-                    string diff = $"{Math.Round((x64TestResult.AverageResult - x86TestResult.AverageResult) / x64TestResult.AverageResult * 100, 2)}";
-                    difference = $"x86 faster by {diff}%";
+                    string diff = $"{Math.Round((x64TestResult.AverageResult - x86TestResult.AverageResult) / x64TestResult.AverageResult * 100, 2)}%";
+                    x86Faster = "✓";
+                    difference = diff;
                 }
                 else
                 {
-                    difference = "Same average result";
+                    difference = "0%";
                 }
 
-                Console.WriteLine("{0,-30} | {1,10:F2} {2,-5} | {3,10:F2} {4,-5} | {5,-20}",
+                Console.WriteLine("{0,-30} | {1,10:F2} {2,-5} | {3,10:F2} {4,-5} | {5,12} | {6,12} | {7,-20}",
                     x64TestResult.TestName,
                     x64TestResult.AverageResult, x64TestResult.ResultUnit,
                     x86TestResult.AverageResult, x86TestResult.ResultUnit,
+                    x64Faster,
+                    x86Faster,
                     difference);
             }
         }
