@@ -15,6 +15,7 @@ namespace Results_Comparer
     internal class Compare_Program
     {
 
+        // Globals
         public static string x64FileName;
         public static string x86FileName;
 
@@ -23,6 +24,8 @@ namespace Results_Comparer
 
         public static string x64Path;
         public static string x86Path;
+
+        public static bool usingDebugFiles = false;
 
         [DataContract]
         private class Result
@@ -98,8 +101,14 @@ namespace Results_Comparer
         // Determine root path with the results files. Tries to see if the program is running from the solution directory, otherwise prompts user for folder
         static (string x64PathStr, string x86PathStr)? DetermineFilePaths()
         {
+            //(string x64Path_local, string x86Path_local) SearchBothRegularAndDebugFileNames(string rootPath, bool searchSubDirectories)
+            //{
+
+            //}
+
+
             string rootPath;
-            bool isUserEnteredPath; // We don't want to list all the files in the directory if the user entered the path since we don't know the size of the directory
+            bool isUserEnteredPath = false; // We don't want to list all the files in the directory if the user entered the path since we don't know the size of the directory
 
             // First look in the current directory
             string _x64Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x64FileName, searchSubDirectories: false);
@@ -110,13 +119,16 @@ namespace Results_Comparer
             {
                 _x64Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x64FileName_Alt, searchSubDirectories: false);
                 _x86Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x86FileName_Alt, searchSubDirectories: false);
+                usingDebugFiles = true;
             }
 
             // If the files are still not found, check for the solution / repository structure
             if (_x64Path == null || _x86Path == null)
             {
+                usingDebugFiles = false;
+
                 var pathResult = DetermineProjectRootPath();
-                if (pathResult == null)
+                if (pathResult == null) // This means a valid path was not auto-detected, AND the user did not enter a valid path, so we should exit
                 {
                     return null;
                 }
@@ -135,16 +147,37 @@ namespace Results_Comparer
                 {
                     _x64Path = SearchForFileInDirectory(rootPath, x64FileName_Alt, searchSubDirectories: !isUserEnteredPath);
                     _x86Path = SearchForFileInDirectory(rootPath, x86FileName_Alt, searchSubDirectories: !isUserEnteredPath);
+                    usingDebugFiles = true;
                 }
             }
 
-            // If the files are still not found, give up
+            // If the files are still not found, if it was an auto-detected path, then prompt the user for the path, otherwise give up
             if (_x64Path == null || _x86Path == null)
             {
-                if (_x64Path == null || _x86Path == null)
+                usingDebugFiles = false;
+                if (isUserEnteredPath)
                 {
-                    Console.WriteLine("Results files not found.");
+                    Console.WriteLine("Results files not found in the specified directory.");
                     return null;
+                }
+                // Prompt the user for the path
+                else
+                {
+                    string userPath = PromptPath();
+                    if (userPath == null)
+                        return null;
+
+                    _x64Path = SearchForFileInDirectory(userPath, x64FileName, searchSubDirectories: false);
+                    _x86Path = SearchForFileInDirectory(userPath, x86FileName, searchSubDirectories: false);
+
+                    // Check for debug file names
+                    if (_x64Path == null || _x86Path == null)
+                    {
+                        _x64Path = SearchForFileInDirectory(userPath, x64FileName_Alt, searchSubDirectories: false);
+                        _x86Path = SearchForFileInDirectory(userPath, x86FileName_Alt, searchSubDirectories: false);
+                        usingDebugFiles = true;
+                    }
+
                 }
             }
 
@@ -182,13 +215,17 @@ namespace Results_Comparer
             if (currentDirectory.Contains("Test-Architecture-Speed\\Results-Comparer"))
             {
                 // Set the project root path to the solution directory (Test-Architecture-Speed)
-                projectRootPath = currentDirectory.Substring(0, currentDirectory.IndexOf("Test-Architecture-Speed") - 1);
+                projectRootPath = currentDirectory.Substring(0, currentDirectory.IndexOf("Results-Comparer") - 1);
 
             }
             // Otherwise if "Results-Comparer" is at least in the path, use that as the root path
             else if (currentDirectory.Contains("Results-Comparer"))
             {
                 projectRootPath = currentDirectory.Substring(0, currentDirectory.IndexOf("Results-Comparer") - 1);
+            }
+            else if (currentDirectory.Contains("Test-Architecture-Speed"))
+            {
+                projectRootPath = currentDirectory.Substring(0, currentDirectory.IndexOf("Test-Architecture-Speed") - 1);
             }
             else
             {
@@ -199,7 +236,6 @@ namespace Results_Comparer
                     return null;
 
                 userEnteredPath = true;
-
             }
 
             return (projectRootPath, userEnteredPath);
