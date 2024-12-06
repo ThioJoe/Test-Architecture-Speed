@@ -26,10 +26,12 @@ class Test_Program
     private static int _LIST_SIZE;
     private static int _TREE_SIZE;
 
+    private static bool DEBUGMODE = false;
+
     // -------------- Set test parameters based on variables above ---------------------
     private static void SetTestParams()
     {
-        if (Debugger.IsAttached)
+        if (DEBUGMODE)
         {
             _test_intensity = 0.1F;
         }
@@ -57,14 +59,34 @@ class Test_Program
         public int RunNumber { get; set; }
     }
 
+    // ----------------- Main method ---------------------
+
     static void Main(string[] args)
     {
+
+        #if DEBUG
+        DEBUGMODE = true;
+        #endif
+
+        if (Debugger.IsAttached)
+        {
+            DEBUGMODE = true;
+        }
+
         SetTestParams();
 
         Console.WriteLine($"Running on {(Environment.Is64BitProcess ? "64-bit" : "32-bit")} process");
         Console.WriteLine($"Pointer size: {Marshal.SizeOf(typeof(IntPtr))} bytes");
         Console.WriteLine(CheckIfHiResolutionTimer());
         Console.WriteLine("Running performance tests...\n");
+
+        if (DEBUGMODE)
+        {
+            Console.WriteLine("WARNING: Debug environment detected. ");
+            Console.WriteLine("  >  Non-release compiled version may not produce realistic results due to lack of optimizations.");
+            Console.WriteLine("  >  Also running tests with reduced intensity for faster debugging.");
+            Console.WriteLine();
+        }
 
         for (int i = 0; i < TEST_COUNT; i++)
         {
