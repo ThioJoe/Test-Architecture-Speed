@@ -33,18 +33,18 @@ class Test_Program
     private static bool OPTIMIZATIONS_OFF = false;
 
     private static bool showHelp = false;
-    private const string HELP_TEXT =
-        "Usage: Test_Program.exe [arguments]\n" +
+    private static readonly string HELP_TEXT =
+        "Usage: Test-Architecture-Speed.exe [arguments]\n" +
         "\n" +
         "Arguments:\n" +
-        "   -iterations <int>       Number of iterations for the tests (positive integer)\n" +
-        "   -list_size <int>        Size of the list for the LinkedList traversal test (positive integer)\n" +
-        "   -tree_size <int>        Size of the binary tree for the Binary Tree operations test (positive integer)\n" +
-        "   -test_intensity <float> Intensity multiplier for the tests (positive float)\n" +
-        "   -test_count <int>       Number of test runs (positive integer)\n" +
+        $"   -iterations <int>       Number of iterations used in the tests (positive integer), Default = {ITERATIONS}\n" +
+        $"   -list_size <int>        Size of the list for the LinkedList traversal (positive integer), Default = {LIST_SIZE}\n" +
+        $"   -tree_size <int>        Size of the binary tree for that test (positive integer), Default = {TREE_SIZE}\n" +
+        $"   -test_intensity <float> Intensity multiplier for the tests (positive float), Default = {test_intensity}\n" +
+        $"   -test_count <int>       Number of test runs (positive integer), Default = {TEST_COUNT}\n" +
         "\n" +
         "Example:\n" +
-        "Test_Program.exe -iterations 500000 -list_size 5000 -tree_size 50000 -test_intensity 0.5 -test_count 5\n\n" +
+        "Test-Architecture-Speed.exe -iterations 500000 -list_size 5000 -tree_size 50000 -test_intensity 0.5 -test_count 5\n\n" +
         "--------------------------------------------------------------------------------------------------------";
 
     // -------------- Set test parameters based on variables above ---------------------
@@ -126,14 +126,15 @@ class Test_Program
         else
         {
             ParseArguments(args);
+
+            if (showHelp)
+            {
+                Console.WriteLine(HELP_TEXT);
+            }
             Console.WriteLine();
         }
        
-        if (showHelp)
-        {
-            Console.WriteLine(HELP_TEXT);
-            Console.WriteLine();
-        }
+        
 
         Console.WriteLine($"Running on {(Environment.Is64BitProcess ? "64-bit" : "32-bit")} process");
         Console.WriteLine($"Pointer size: {Marshal.SizeOf(typeof(IntPtr))} bytes");
