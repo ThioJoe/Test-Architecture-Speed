@@ -25,10 +25,25 @@ class Test_Program
     private static int _ITERATIONS;
     private static int _LIST_SIZE;
     private static int _TREE_SIZE;
+    private static int _TEST_COUNT;
 
     private static bool DEBUG_BUILD = false;
     private static bool ACTIVE_DEBUG = false;
     private static bool OPTIMIZATIONS_OFF = false;
+
+    private const string HELP_TEXT = @"
+    Usage: Test_Program.exe [arguments]
+
+    Arguments:
+       -iterations <int>       Number of iterations for the tests (positive integer)
+       -list_size <int>        Size of the list for the LinkedList traversal test (positive integer)
+       -tree_size <int>        Size of the binary tree for the Binary Tree operations test (positive integer)
+       -test_intensity <float> Intensity multiplier for the tests (positive float)
+       -test_count <int>       Number of test runs (positive integer)
+
+    Example:
+    Test_Program.exe -iterations 500000 -list_size 5000 -tree_size 50000 -test_intensity 0.5 -test_count 5
+    ";
 
     // -------------- Set test parameters based on variables above ---------------------
     private static void SetTestParams()
@@ -62,7 +77,8 @@ class Test_Program
         _ITERATIONS = (int)Math.Round(ITERATIONS * _test_intensity);
         _LIST_SIZE = (int)Math.Round(LIST_SIZE * _test_intensity);
         _TREE_SIZE = (int)Math.Round(TREE_SIZE * _test_intensity);
-        
+        _TEST_COUNT = TEST_COUNT;
+
     }
 
     // Class for storing a particular test result for a single run
@@ -94,8 +110,17 @@ class Test_Program
 
     static void Main(string[] args)
     {
-
         SetTestParams();
+        if (args.Length == 0)
+        {
+            Console.WriteLine(HELP_TEXT);
+            return;
+        }
+        else
+        {
+            ParseArguments(args);
+        }
+       
 
         Console.WriteLine($"Running on {(Environment.Is64BitProcess ? "64-bit" : "32-bit")} process");
         Console.WriteLine($"Pointer size: {Marshal.SizeOf(typeof(IntPtr))} bytes");
@@ -109,7 +134,7 @@ class Test_Program
         else if (OPTIMIZATIONS_OFF)
             Console.WriteLine("WARNING: Optimizations are disabled. Performance results may not be accurate.\n");
 
-        for (int i = 0; i < TEST_COUNT; i++)
+        for (int i = 0; i < _TEST_COUNT; i++)
         {
             Console.WriteLine($"Test run {i + 1}:");
             RunAllTests(i+1);
@@ -120,6 +145,132 @@ class Test_Program
 
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
+    }
+
+    static void ParseArguments(string[] args)
+    {
+        Dictionary<string, Type> validArgsMap = new Dictionary<string, Type>
+        {
+            { "iterations", typeof(int) },
+            { "list_size", typeof(int) },
+            { "tree_size", typeof(int) },
+            { "test_intensity", typeof(float) },
+            { "test_count", typeof(int) },
+            { "?", null },
+            { "help", null }
+        };
+
+        // ----------------- Local function ---------------------
+        bool ValidateAndApplyArgValue(string arg, string value)
+        {
+            object parsedValue = null;
+
+            // Trim the - if it hasn't been removed already
+            arg = arg.TrimStart('-');
+            // Get the type of the argument
+            Type argType = validArgsMap[arg];
+
+            // Integer arguments
+            if (argType == typeof(int))
+            {
+                if (!int.TryParse(value, out int val) || val <= 0)
+                {
+                    Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value} -- Must be a positive integer");
+                    return false;
+                }
+                else
+                {
+                    parsedValue = val;
+                }
+            }
+            // Float arguments
+            else if (argType == typeof(float))
+            {
+                if (!float.TryParse(value, out float val) || val <= 0)
+                {
+                    Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value} -- Must be a positive float");
+                    return false;
+                }
+                else
+                {
+                    parsedValue = val;
+                }
+            }
+            else 
+            {
+                Console.WriteLine($"ERROR: Invalid argument: {arg}");
+                return false;
+            }
+
+            // Apply the value
+            switch (arg)
+            {
+                case "iterations":
+                    _ITERATIONS = (int)parsedValue;
+                    break;
+                case "list_size":
+                    _LIST_SIZE = (int)parsedValue;
+                    break;
+                case "tree_size":
+                    _TREE_SIZE = (int)parsedValue;
+                    break;
+                case "test_intensity":
+                    _test_intensity = (float)parsedValue;
+                    break;
+                case "test_count":
+                    _TEST_COUNT = (int)parsedValue;
+                    break;
+            }
+
+            return true;
+        }
+
+        // ----------------- End local function ---------------------
+
+        bool usedInvalidArgs = false;
+
+        Dictionary<string, string> argDict = new Dictionary<string, string>();
+
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("-"))
+            {
+                string key = args[i].TrimStart('-');
+                // If the argument isn't in the valid list, skip it
+                if (!validArgsMap.ContainsKey(key))
+                {
+                    Console.WriteLine($"WARNING: Skipping Invalid argument: {key}");
+                    usedInvalidArgs = true;
+                    continue; // Skip it
+                }
+                else
+                {
+                    string value = i + 1 < args.Length && !args[i + 1].StartsWith("-") ? args[i + 1] : null;
+                    if (value == null)
+                    {
+                        Console.WriteLine($"WARNING: No value provided for argument: {key}");
+                        usedInvalidArgs = true;
+                        continue; // Skip it
+                    }
+                    else
+                    {
+                        bool validated = ValidateAndApplyArgValue(key, value);
+                        if (!validated)
+                        {
+                            usedInvalidArgs = true;
+                        }
+                        else
+                        {
+                            // Check if the next argument starts with a -, if not, skip it because it's the value for the current invalid argument
+                            if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                                i++; // Skip the next argument
+                        }
+                    }
+
+                    argDict[key] = value;
+                }
+            }
+        } // End of for loop
     }
 
     static void RunAllTests(int runNum)
