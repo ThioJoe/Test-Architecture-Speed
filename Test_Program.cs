@@ -9,7 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
 
-class Program
+class Test_Program
 {
     private const int ITERATIONS = 1000000;
     private const int LIST_SIZE = 10000;
@@ -158,31 +158,6 @@ class Program
         string unit;
         decimal value;
         string valueStr;
-
-        //if (seconds >= 1 || seconds >= 0.001M)
-        //{
-        //    unit = "s";
-        //    value = seconds;
-        //    valueStr = seconds.ToString("0.000");
-        //}
-        //else if (seconds >= 1 || seconds >= 0.001M) // milliseconds range
-        //{
-        //    unit = "ms";
-        //    value = (seconds * 1000);
-        //    valueStr = (seconds * 1000).ToString("0.000");
-        //}
-        //else if (seconds >= 0.000001M) // microseconds range
-        //{
-        //    unit = "μs";
-        //    value = (seconds * 1000000);
-        //    valueStr = (seconds * 1000000).ToString("0.000");
-        //}
-        //else // nanoseconds range
-        //{
-        //    unit = "ns";
-        //    value = (seconds * 1000000000);
-        //    valueStr = (seconds * 1000000000).ToString("0.000");
-        //}
 
         unit = "ms";
         value = (seconds * 1000);

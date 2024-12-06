@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 
 namespace Results_Comparer
 {
-    internal class Program
+    internal class Compare_Program
     {
 
         public static string x64FileName;
