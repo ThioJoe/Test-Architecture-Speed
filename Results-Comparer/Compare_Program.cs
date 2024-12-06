@@ -101,26 +101,30 @@ namespace Results_Comparer
         // Determine root path with the results files. Tries to see if the program is running from the solution directory, otherwise prompts user for folder
         static (string x64PathStr, string x86PathStr)? DetermineFilePaths()
         {
-            //(string x64Path_local, string x86Path_local) SearchBothRegularAndDebugFileNames(string rootPath, bool searchSubDirectories)
-            //{
-
-            //}
-
+            // -------------- Local function to check both regular and debug file names --------------
+            (string x64Path_local, string x86Path_local) SearchBothRegularAndDebugFileNames(string _rootPath, bool searchSubDirectories)
+            {
+                // Check using regular file names first
+                string x64Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x64FileName, searchSubDirectories: searchSubDirectories);
+                string x86Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x86FileName, searchSubDirectories: searchSubDirectories);
+                // If the files are not found, try the debug file names
+                if (x64Path_local == null || x86Path_local == null)
+                {
+                    x64Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x64FileName_Alt, searchSubDirectories: searchSubDirectories);
+                    x86Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x86FileName_Alt, searchSubDirectories: searchSubDirectories);
+                    usingDebugFiles = true;
+                }
+                return (x64Path_local, x86Path_local);
+            }
+            // -------------- End of local function --------------
 
             string rootPath;
             bool isUserEnteredPath = false; // We don't want to list all the files in the directory if the user entered the path since we don't know the size of the directory
+            string _x64Path;
+            string _x86Path;
 
             // First look in the current directory
-            string _x64Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x64FileName, searchSubDirectories: false);
-            string _x86Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x86FileName, searchSubDirectories: false);
-
-            // If the files are not found in the current directory, try the debug file names
-            if (_x64Path == null || _x86Path == null)
-            {
-                _x64Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x64FileName_Alt, searchSubDirectories: false);
-                _x86Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x86FileName_Alt, searchSubDirectories: false);
-                usingDebugFiles = true;
-            }
+            (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: Directory.GetCurrentDirectory(), searchSubDirectories: false);
 
             // If the files are still not found, check for the solution / repository structure
             if (_x64Path == null || _x86Path == null)
@@ -138,17 +142,7 @@ namespace Results_Comparer
                     isUserEnteredPath = pathResult.Value.userEnteredPath;
                 }
 
-                // Check hard coded paths first
-                _x64Path = SearchForFileInDirectory(rootPath, x64FileName, searchSubDirectories: !isUserEnteredPath);
-                _x86Path = SearchForFileInDirectory(rootPath, x86FileName, searchSubDirectories: !isUserEnteredPath);
-
-                // If the files are not found in the root directory, try the debug file names
-                if (_x64Path == null || _x86Path == null)
-                {
-                    _x64Path = SearchForFileInDirectory(rootPath, x64FileName_Alt, searchSubDirectories: !isUserEnteredPath);
-                    _x86Path = SearchForFileInDirectory(rootPath, x86FileName_Alt, searchSubDirectories: !isUserEnteredPath);
-                    usingDebugFiles = true;
-                }
+                (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: rootPath, searchSubDirectories: !isUserEnteredPath);
             }
 
             // If the files are still not found, if it was an auto-detected path, then prompt the user for the path, otherwise give up
@@ -167,16 +161,7 @@ namespace Results_Comparer
                     if (userPath == null)
                         return null;
 
-                    _x64Path = SearchForFileInDirectory(userPath, x64FileName, searchSubDirectories: false);
-                    _x86Path = SearchForFileInDirectory(userPath, x86FileName, searchSubDirectories: false);
-
-                    // Check for debug file names
-                    if (_x64Path == null || _x86Path == null)
-                    {
-                        _x64Path = SearchForFileInDirectory(userPath, x64FileName_Alt, searchSubDirectories: false);
-                        _x86Path = SearchForFileInDirectory(userPath, x86FileName_Alt, searchSubDirectories: false);
-                        usingDebugFiles = true;
-                    }
+                    (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: userPath, searchSubDirectories: false);
 
                 }
             }
