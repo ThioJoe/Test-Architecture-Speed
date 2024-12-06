@@ -15,10 +15,10 @@ class Test_Program
     private const int LIST_SIZE = 10000;
     private const int TREE_SIZE = 100000;
 
-    private const float test_intensity = 1F;
-    private const int TEST_COUNT = 3;
+    private const float test_intensity = 1F; // A multiplier of the constants above. 1F = uses the constants as is, 0.5F = half the values, etc.
+    private const int TEST_COUNT = 3;        // Number of test runs
 
-    // ---------------------------------------------------------
+    // =========================== Don't change anything below this line - change above values instead ===========================
 
     private static List<Result> ResultsList = new List<Result>();
     private static float _test_intensity;
@@ -26,7 +26,7 @@ class Test_Program
     private static int _LIST_SIZE;
     private static int _TREE_SIZE;
 
-    // -----------------------------------
+    // -------------- Set test parameters based on variables above ---------------------
     private static void SetTestParams()
     {
         if (Debugger.IsAttached)
@@ -43,6 +43,7 @@ class Test_Program
         _TREE_SIZE = (int)Math.Round(TREE_SIZE * _test_intensity);
     }
 
+    // Class for storing a particular test result for a single run
     [DataContract]
     private class Result
     {
@@ -80,7 +81,7 @@ class Test_Program
 
     static void RunAllTests(int runNum)
     {
-        void AddResultGetString(Result resultVal, string testName)
+        void AddResult(Result resultVal, string testName)
         {
             resultVal.TestName = testName;
             resultVal.RunNumber = runNum;
@@ -89,23 +90,23 @@ class Test_Program
 
         Dictionary<string, string> testResultDict = new Dictionary<string, string>();
         var r = TestLinkedListTraversal();
-        AddResultGetString(r.resultVal, "LinkedList Traversal");
+        AddResult(r.resultVal, "LinkedList Traversal");
         testResultDict["LinkedList Traversal"] = r.resultStr;
 
         r = TestObjectAllocation();
-        AddResultGetString(r.resultVal, "Object Allocation");
+        AddResult(r.resultVal, "Object Allocation");
         testResultDict["Object Allocation"] = r.resultStr;
 
         r = TestStringManipulation();
-        AddResultGetString(r.resultVal, "String Manipulation");
+        AddResult(r.resultVal, "String Manipulation");
         testResultDict["String Manipulation"] = r.resultStr;
 
         r = TestBinaryTreeOperations();
-        AddResultGetString(r.resultVal, "Binary Tree Operations");
+        AddResult(r.resultVal, "Binary Tree Operations");
         testResultDict["Binary Tree Operations"] = r.resultStr;
 
         r = TestDictionaryOperations();
-        AddResultGetString(r.resultVal, "Dictionary Operations");
+        AddResult(r.resultVal, "Dictionary Operations");
         testResultDict["Dictionary Operations"] = r.resultStr;
 
         // Display the results with the values lined up
@@ -135,7 +136,7 @@ class Test_Program
         }
     }
 
-    // P/Invoke signature for QueryPerformanceFrequency
+    // P/Invoke signature for QueryPerformanceFrequency - To determine if the system supports high-resolution performance counter
     [DllImport("Kernel32.dll")]
     private static extern bool QueryPerformanceFrequency(out long lpFrequency);
 
@@ -303,6 +304,7 @@ class Test_Program
     }
 }
 
+// Classes used in the tests
 class TestObject
 {
     public int Id { get; set; }

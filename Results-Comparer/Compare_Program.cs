@@ -17,6 +17,10 @@ namespace Results_Comparer
 
         public static string x64FileName;
         public static string x86FileName;
+
+        public static string x64FileName_Alt;
+        public static string x86FileName_Alt;
+
         public static string x64Path;
         public static string x86Path;
 
@@ -41,39 +45,31 @@ namespace Results_Comparer
         }
 
 
+        // ----------------- Main -----------------
+
         static void Main(string[] args)
         {
             // File names
             x64FileName = "Results64bit.json";
             x86FileName = "Results32bit.json";
+            // The file names produced if the program was run in debug mode
+            x64FileName_Alt = "Results64bit_debug.json";
+            x86FileName_Alt = "Results32bit_debug.json";
 
-            if (Debugger.IsAttached)
+            var pathsResult = DetermineFilePaths();
+
+            if (pathsResult == null)
             {
-                //x64FileName = "Results64bit_debug.json";
-                //x86FileName = "Results32bit_debug.json";
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadLine();
+                return;
+            }
+            else
+            {
+                (x64Path, x86Path) = pathsResult.Value;
             }
 
-            // Root path with the results files
-            string rootPath = "D:\\Users\\Joe\\Documents\\Development\\Test-Architecture-Speed";
-
-            // Check hard coded paths first
-            x64Path = FindFile(rootPath, x64FileName);
-            x86Path = FindFile(rootPath, x86FileName);
-
-            if (x64Path == null || x86Path == null)
-            {
-                string userPath = PromptPath();
-                x64Path = FindFile(userPath, x64FileName);
-                x86Path = FindFile(userPath, x86FileName);
-
-                if (x64Path == null || x86Path == null)
-                {
-                    Console.WriteLine("Results files not found.");
-                    return;
-                }
-            }
-
-            // Deserialize using the DataContractJsonSerializer
+            // Deserialize the json files back into objects using the DataContractJsonSerializer
             List<Result> x64Results;
             List<Result> x86Results;
 
@@ -97,6 +93,136 @@ namespace Results_Comparer
 
         }
 
+        // -------------------------- Scaffolding / Results files detection functions --------------------------
+
+        // Determine root path with the results files. Tries to see if the program is running from the solution directory, otherwise prompts user for folder
+        static (string x64PathStr, string x86PathStr)? DetermineFilePaths()
+        {
+            string rootPath;
+            bool isUserEnteredPath; // We don't want to list all the files in the directory if the user entered the path since we don't know the size of the directory
+
+            // First look in the current directory
+            string _x64Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x64FileName, searchSubDirectories: false);
+            string _x86Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x86FileName, searchSubDirectories: false);
+
+            // If the files are not found in the current directory, try the debug file names
+            if (_x64Path == null || _x86Path == null)
+            {
+                _x64Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x64FileName_Alt, searchSubDirectories: false);
+                _x86Path = SearchForFileInDirectory(rootPath: Directory.GetCurrentDirectory(), fileName: x86FileName_Alt, searchSubDirectories: false);
+            }
+
+            // If the files are still not found, check for the solution / repository structure
+            if (_x64Path == null || _x86Path == null)
+            {
+                var pathResult = DetermineProjectRootPath();
+                if (pathResult == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    rootPath = pathResult.Value.rootPath;
+                    isUserEnteredPath = pathResult.Value.userEnteredPath;
+                }
+
+                // Check hard coded paths first
+                _x64Path = SearchForFileInDirectory(rootPath, x64FileName, searchSubDirectories: !isUserEnteredPath);
+                _x86Path = SearchForFileInDirectory(rootPath, x86FileName, searchSubDirectories: !isUserEnteredPath);
+
+                // If the files are not found in the root directory, try the debug file names
+                if (_x64Path == null || _x86Path == null)
+                {
+                    _x64Path = SearchForFileInDirectory(rootPath, x64FileName_Alt, searchSubDirectories: !isUserEnteredPath);
+                    _x86Path = SearchForFileInDirectory(rootPath, x86FileName_Alt, searchSubDirectories: !isUserEnteredPath);
+                }
+            }
+
+            // If the files are still not found, give up
+            if (_x64Path == null || _x86Path == null)
+            {
+                if (_x64Path == null || _x86Path == null)
+                {
+                    Console.WriteLine("Results files not found.");
+                    return null;
+                }
+            }
+
+            return (_x64Path, _x86Path);
+        }
+
+        static string SearchForFileInDirectory(string rootPath, string fileName, bool searchSubDirectories)
+        {
+            SearchOption option;
+            if (searchSubDirectories)
+            {
+                option = SearchOption.AllDirectories;
+            }
+            else
+            {
+                option = SearchOption.TopDirectoryOnly;
+            }
+
+            string[] files = Directory.GetFiles(rootPath, fileName, option);
+            if (files.Length == 0)
+            {
+                return null;
+            }
+            return files[0];
+        }
+
+        // Used to determine if the program is running from the solution directory / repository folder structure
+        static (string rootPath, bool userEnteredPath)? DetermineProjectRootPath()
+        {
+            string projectRootPath;
+            bool userEnteredPath = false;
+
+            string currentDirectory = Directory.GetCurrentDirectory();
+            // If "Results-Comparer" is in the path, then we are probably in the solution directory
+            if (currentDirectory.Contains("Test-Architecture-Speed\\Results-Comparer"))
+            {
+                // Set the project root path to the solution directory (Test-Architecture-Speed)
+                projectRootPath = currentDirectory.Substring(0, currentDirectory.IndexOf("Test-Architecture-Speed") - 1);
+
+            }
+            // Otherwise if "Results-Comparer" is at least in the path, use that as the root path
+            else if (currentDirectory.Contains("Results-Comparer"))
+            {
+                projectRootPath = currentDirectory.Substring(0, currentDirectory.IndexOf("Results-Comparer") - 1);
+            }
+            else
+            {
+                // Prompt the user for the path to the results files
+                projectRootPath = PromptPath();
+
+                if (projectRootPath == null)
+                    return null;
+
+                userEnteredPath = true;
+
+            }
+
+            return (projectRootPath, userEnteredPath);
+        }
+
+        static string PromptPath()
+        {
+            Console.WriteLine("Enter the folder path containing the json results files.");
+            Console.Write("Enter path: ");
+            string input = Console.ReadLine();
+            input = input.Trim('"');
+            if (!Directory.Exists(input))
+            {
+                Console.WriteLine("Invalid Path - Path not found.");
+                return null;
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        // ------------------------------------ Actual comparison logic ------------------------------------
         static void CompareResults(List<Result> x64Results, List<Result> x86Results)
         {
             // Local function to get average results grouped by TestName
@@ -187,24 +313,9 @@ namespace Results_Comparer
                     x86Faster.PadLeft(3).PadRight(6),
                     difference);
             }
-        }
 
-        static string FindFile(string rootPath, string fileName)
-        {
-            string[] files = Directory.GetFiles(rootPath, fileName, SearchOption.AllDirectories);
-            if (files.Length == 0)
-            {
-                return null;
-            }
-            return files[0];
-        }
+        } // End of CompareResults
 
-        static string PromptPath()
-        {
-            string message = "Enter the folder path where the results files are located. Subdirectories will be searched too.";
-            Console.WriteLine(message);
-            Console.Write("Enter: ");
-            return Console.ReadLine();
-        }
-    }
-}
+    } // ------------------ End of class Compare_Program ------------------
+
+} // ------------------ End of namespace Results_Comparer ------------------
