@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
 
+#nullable enable
 class Test_Program
 {
     private const int ITERATIONS = 1000000;
@@ -31,19 +32,20 @@ class Test_Program
     private static bool ACTIVE_DEBUG = false;
     private static bool OPTIMIZATIONS_OFF = false;
 
-    private const string HELP_TEXT = @"
-    Usage: Test_Program.exe [arguments]
-
-    Arguments:
-       -iterations <int>       Number of iterations for the tests (positive integer)
-       -list_size <int>        Size of the list for the LinkedList traversal test (positive integer)
-       -tree_size <int>        Size of the binary tree for the Binary Tree operations test (positive integer)
-       -test_intensity <float> Intensity multiplier for the tests (positive float)
-       -test_count <int>       Number of test runs (positive integer)
-
-    Example:
-    Test_Program.exe -iterations 500000 -list_size 5000 -tree_size 50000 -test_intensity 0.5 -test_count 5
-    ";
+    private static bool showHelp = false;
+    private const string HELP_TEXT =
+        "Usage: Test_Program.exe [arguments]\n" +
+        "\n" +
+        "Arguments:\n" +
+        "   -iterations <int>       Number of iterations for the tests (positive integer)\n" +
+        "   -list_size <int>        Size of the list for the LinkedList traversal test (positive integer)\n" +
+        "   -tree_size <int>        Size of the binary tree for the Binary Tree operations test (positive integer)\n" +
+        "   -test_intensity <float> Intensity multiplier for the tests (positive float)\n" +
+        "   -test_count <int>       Number of test runs (positive integer)\n" +
+        "\n" +
+        "Example:\n" +
+        "Test_Program.exe -iterations 500000 -list_size 5000 -tree_size 50000 -test_intensity 0.5 -test_count 5\n\n" +
+        "--------------------------------------------------------------------------------------------------------";
 
     // -------------- Set test parameters based on variables above ---------------------
     private static void SetTestParams()
@@ -111,21 +113,34 @@ class Test_Program
     static void Main(string[] args)
     {
         SetTestParams();
+
         if (args.Length == 0)
         {
-            Console.WriteLine(HELP_TEXT);
-            return;
+            Console.WriteLine("For help, use launch parameter -help  or  /?\n");
         }
         else
         {
             ParseArguments(args);
+            Console.WriteLine();
         }
        
+        if (showHelp)
+        {
+            Console.WriteLine(HELP_TEXT);
+            Console.WriteLine();
+        }
 
         Console.WriteLine($"Running on {(Environment.Is64BitProcess ? "64-bit" : "32-bit")} process");
         Console.WriteLine($"Pointer size: {Marshal.SizeOf(typeof(IntPtr))} bytes");
         Console.WriteLine(CheckIfHiResolutionTimer());
-        Console.WriteLine("Running performance tests...\n");
+        Console.WriteLine("\nRunning performance with parameters:");
+        Console.WriteLine($"    Iterations: {_ITERATIONS}");
+        Console.WriteLine($"    List size: {_LIST_SIZE}");
+        Console.WriteLine($"    Tree size: {_TREE_SIZE}");
+        Console.WriteLine($"    Test intensity: {_test_intensity} (Multiplier on above values)");
+        Console.WriteLine($"    Test count: {_TEST_COUNT}\n");
+
+
 
         if (ACTIVE_DEBUG)
             Console.WriteLine("WARNING: Debug mode is active. Performance results may not be accurate. Also reducing test intensity to 1/10th.\n");
@@ -149,7 +164,7 @@ class Test_Program
 
     static void ParseArguments(string[] args)
     {
-        Dictionary<string, Type> validArgsMap = new Dictionary<string, Type>
+        Dictionary<string, Type?> validArgsMap = new Dictionary<string, Type?>
         {
             { "iterations", typeof(int) },
             { "list_size", typeof(int) },
@@ -163,24 +178,36 @@ class Test_Program
         // ----------------- Local function ---------------------
         bool ValidateAndApplyArgValue(string arg, string value)
         {
-            object parsedValue = null;
+            object? parsedValue;
+            bool isSwitch = false;
 
             // Trim the - if it hasn't been removed already
-            arg = arg.TrimStart('-');
-            // Get the type of the argument
-            Type argType = validArgsMap[arg];
+            arg = arg.TrimStart('-').TrimStart('/');
+            
+            // Get the type of the argument. Shouldn't be null here because we've already checked for switches
+            Type? argType = validArgsMap[arg];
 
+            // Switch / null arguments
+            if (argType == null)
+            {
+                isSwitch = true;
+                parsedValue = null;
+            }
             // Integer arguments
-            if (argType == typeof(int))
+            else if (argType == typeof(int))
             {
                 if (!int.TryParse(value, out int val) || val <= 0)
                 {
-                    Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value} -- Must be a positive integer");
+                    if (value == null)
+                        Console.WriteLine($"ERROR: Missing value for argument {arg}");
+                    else
+                        Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value} (Must be a positive integer)");
                     return false;
                 }
                 else
                 {
                     parsedValue = val;
+                    Console.WriteLine($"Setting {arg} to {val}");
                 }
             }
             // Float arguments
@@ -188,17 +215,41 @@ class Test_Program
             {
                 if (!float.TryParse(value, out float val) || val <= 0)
                 {
-                    Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value} -- Must be a positive float");
+                    if (value == null)
+                        Console.WriteLine($"ERROR: Missing value for argument {arg}");
+                    else
+                        Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value} (Must be a positive float)");
                     return false;
                 }
                 else
                 {
                     parsedValue = val;
+                    Console.WriteLine($"Setting {arg} to {val}");
                 }
             }
             else 
             {
                 Console.WriteLine($"ERROR: Invalid argument: {arg}");
+                return false;
+            }
+
+            // Process the arg values
+            if (isSwitch) // Check for switches before worrying about parsedValue, since it's not needed for switches
+            {
+                switch (arg)
+                {
+                    case "?":
+                    case "help":
+                        showHelp = true;
+                        break;
+                }
+                return true;
+            }
+
+            // parsedValue should not be null at this point but check anyway
+            if (parsedValue == null)
+            {
+                Console.WriteLine($"ERROR: Invalid value for argument {arg}: {value}");
                 return false;
             }
 
@@ -233,44 +284,54 @@ class Test_Program
 
         for (int i = 0; i < args.Length; i++)
         {
-            if (args[i].StartsWith("-"))
+            if (args[i].StartsWith("-") || args[i].StartsWith("/"))
             {
-                string key = args[i].TrimStart('-');
+                string key = args[i].TrimStart('-').TrimStart('/');
                 // If the argument isn't in the valid list, skip it
                 if (!validArgsMap.ContainsKey(key))
                 {
-                    Console.WriteLine($"WARNING: Skipping Invalid argument: {key}");
+                    Console.WriteLine($"ERROR: Skipping Invalid argument: {key}");
                     usedInvalidArgs = true;
                     continue; // Skip it
                 }
                 else
                 {
-                    string value = i + 1 < args.Length && !args[i + 1].StartsWith("-") ? args[i + 1] : null;
-                    if (value == null)
+                    // Check if the next argument exists and does not start with a '-' (indicating it's a value for the current argument)
+                    string value = null;
+                    if (i + 1 < args.Length)
                     {
-                        Console.WriteLine($"WARNING: No value provided for argument: {key}");
+                        if (!args[i + 1].StartsWith("-") && !args[i + 1].StartsWith("/"))
+                        {
+                            value = args[i + 1];
+                        }
+                        // If it starst with a negative and is just a number, user entered a negative number, not a new argument
+                        else if (args[i + 1].StartsWith("-") && int.TryParse(args[i + 1], out int val))
+                        {
+                            value = args[i + 1];
+                        }
+                    }
+
+                    bool validated = ValidateAndApplyArgValue(key, value);
+                    if (!validated)
+                    {
                         usedInvalidArgs = true;
-                        continue; // Skip it
                     }
                     else
                     {
-                        bool validated = ValidateAndApplyArgValue(key, value);
-                        if (!validated)
-                        {
-                            usedInvalidArgs = true;
-                        }
-                        else
-                        {
-                            // Check if the next argument starts with a -, if not, skip it because it's the value for the current invalid argument
-                            if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
-                                i++; // Skip the next argument
-                        }
+                        // Check if the next argument starts with a - or /, if not, skip it because it's the value for the current invalid argument
+                        if (i + 1 < args.Length && !args[i + 1].StartsWith("-") && !args[i + 1].StartsWith("/"))
+                            i++; // Skip the next argument
                     }
 
                     argDict[key] = value;
                 }
             }
         } // End of for loop
+
+        if (usedInvalidArgs)
+        {
+            Console.WriteLine("----- WARNING: Some arguments were invalid or missing values. See above errors. -----\n");
+        }
     }
 
     static void RunAllTests(int runNum)
