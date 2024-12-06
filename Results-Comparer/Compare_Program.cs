@@ -63,6 +63,10 @@ namespace Results_Comparer
 
         static void Main(string[] args)
         {
+            // Show info about the program
+            Console.WriteLine("----------- Test-Architecture-Speed Results Comparison Tool ----------");
+            Console.WriteLine("Compare results from two json files created by Test-Architecture-Speed\n\n");
+
             // File names
             x64FileName = "Results64bit.json";
             x86FileName = "Results32bit.json";

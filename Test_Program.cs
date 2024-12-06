@@ -112,6 +112,11 @@ class Test_Program
 
     static void Main(string[] args)
     {
+        // Show some info about the program
+        Console.WriteLine("------------------ Test-Architecture-Speed Tool ------------------");
+        Console.WriteLine("Compare the performance of this binary when compiled as x64 vs x86");
+        Console.WriteLine("------------------------------------------------------------------\n");
+
         SetTestParams();
 
         if (args.Length == 0)
