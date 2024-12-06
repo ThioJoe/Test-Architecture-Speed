@@ -12,6 +12,9 @@ The **Test-Architecture-Speed Tool** is a simple utility to compare the performa
 
 ## Usage
 
+### Download
+You can find the latest version on the [Releases](https://github.com/ThioJoe/Test-Architecture-Speed/releases) page. Look under "Assets" for the latest release to get the pre-compiled exe's.
+
 ### Running the Tests
 
 To run the tests, execute both versions of the binary (not at the same time) with optional arguments to customize the test parameters.
