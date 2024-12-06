@@ -40,6 +40,17 @@ namespace Results_Comparer
             public int RunNumber { get; set; }
         }
 
+        [DataContract]
+        private class AllResultsInfo
+        {
+            [DataMember]
+            public List<Result> Results { get; set; }
+            [DataMember]
+            public bool OptimizationsDisabled { get; set; }
+            [DataMember]
+            public bool DebugMode { get; set; }
+        }
+
         private class TestResult
         {
             public string TestName { get; set; }
@@ -73,23 +84,31 @@ namespace Results_Comparer
             }
 
             // Deserialize the json files back into objects using the DataContractJsonSerializer
-            List<Result> x64Results;
-            List<Result> x86Results;
+            AllResultsInfo x64ResultsInfo;
+            AllResultsInfo x86ResultsInfo;
 
             using (FileStream fs = new FileStream(x64Path, FileMode.Open))
             {
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<Result>));
-                x64Results = (List<Result>)serializer.ReadObject(fs);
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AllResultsInfo));
+                x64ResultsInfo = (AllResultsInfo)serializer.ReadObject(fs);
             }
 
             using (FileStream fs = new FileStream(x86Path, FileMode.Open))
             {
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<Result>));
-                x86Results = (List<Result>)serializer.ReadObject(fs);
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AllResultsInfo));
+                x86ResultsInfo = (AllResultsInfo)serializer.ReadObject(fs);
             }
 
+            // If debug files not already detected, check if the results are from a debug session using info stored in results files
+            if (!usingDebugFiles)
+            {
+                usingDebugFiles = x64ResultsInfo.DebugMode || x86ResultsInfo.DebugMode;
+            }
+            
+            bool optimizations_off = x64ResultsInfo.OptimizationsDisabled || x86ResultsInfo.OptimizationsDisabled;
+
             // Compare the results
-            CompareResults(x64Results, x86Results);
+            CompareResults(x64Results: x64ResultsInfo.Results, x86Results: x86ResultsInfo.Results, optimizations_off: optimizations_off, debug_results: usingDebugFiles);
 
             Console.WriteLine("\n\nPress any key to exit");
             Console.ReadLine();
@@ -249,7 +268,7 @@ namespace Results_Comparer
         }
 
         // ------------------------------------ Actual comparison logic ------------------------------------
-        static void CompareResults(List<Result> x64Results, List<Result> x86Results)
+        static void CompareResults(List<Result> x64Results, List<Result> x86Results, bool optimizations_off, bool debug_results)
         {
             // Local function to get average results grouped by TestName
             List<TestResult> GetAverageResultsList(List<Result> results)
@@ -273,9 +292,13 @@ namespace Results_Comparer
             Console.WriteLine("x64 results file: {0}", x64Path);
             Console.WriteLine("x86 results file: {0}", x86Path);
 
-            if (usingDebugFiles)
+            if (debug_results)
             {
                 Console.WriteLine("\nWARNING: Using results from a debug session or debug version of binaries - results may not be realistic.");
+            }
+            if (optimizations_off)
+            {
+                Console.WriteLine("WARNING: Results were obtained with optimizations disabled - results may not be realistic.");
             }
 
             Console.WriteLine("\n\n");

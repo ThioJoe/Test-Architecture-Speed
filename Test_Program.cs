@@ -26,13 +26,16 @@ class Test_Program
     private static int _LIST_SIZE;
     private static int _TREE_SIZE;
 
-    private static bool DEBUGMODE = false;
+    private static bool DEBUG_BUILD = false;
+    private static bool ACTIVE_DEBUG = false;
+    private static bool OPTIMIZATIONS_OFF = false;
 
     // -------------- Set test parameters based on variables above ---------------------
     private static void SetTestParams()
     {
-        if (DEBUGMODE)
+        if (Debugger.IsAttached)
         {
+            ACTIVE_DEBUG = true;
             _test_intensity = 0.1F;
         }
         else
@@ -40,9 +43,26 @@ class Test_Program
             _test_intensity = test_intensity;
         }
 
+        #if DEBUG
+        DEBUG_BUILD = true;
+        #endif
+
+        // Check if optimizations are disabled to warn user
+        var assembly = typeof(Test_Program).Assembly;
+        var debuggableAttribute = assembly.GetCustomAttributes(typeof(DebuggableAttribute), false)
+                                            .Cast<DebuggableAttribute>()
+                                            .FirstOrDefault();
+        if (debuggableAttribute != null)
+            OPTIMIZATIONS_OFF = debuggableAttribute.IsJITOptimizerDisabled;
+        else
+            OPTIMIZATIONS_OFF = false; // If no DebuggableAttribute is found, assume optimizations are enabled
+
+        // ----------------- Set test parameters ---------------------
+
         _ITERATIONS = (int)Math.Round(ITERATIONS * _test_intensity);
         _LIST_SIZE = (int)Math.Round(LIST_SIZE * _test_intensity);
         _TREE_SIZE = (int)Math.Round(TREE_SIZE * _test_intensity);
+        
     }
 
     // Class for storing a particular test result for a single run
@@ -59,19 +79,21 @@ class Test_Program
         public int RunNumber { get; set; }
     }
 
+    [DataContract]
+    private class AllResultsInfo
+    {
+        [DataMember]
+        public List<Result> Results { get; set; }
+        [DataMember]
+        public bool OptimizationsDisabled { get; set; }
+        [DataMember]
+        public bool DebugMode { get; set; }
+    }
+
     // ----------------- Main method ---------------------
 
     static void Main(string[] args)
     {
-
-        #if DEBUG
-        DEBUGMODE = true;
-        #endif
-
-        if (Debugger.IsAttached)
-        {
-            DEBUGMODE = true;
-        }
 
         SetTestParams();
 
@@ -80,13 +102,12 @@ class Test_Program
         Console.WriteLine(CheckIfHiResolutionTimer());
         Console.WriteLine("Running performance tests...\n");
 
-        if (DEBUGMODE)
-        {
-            Console.WriteLine("WARNING: Debug environment detected. ");
-            Console.WriteLine("  >  Non-release compiled version may not produce realistic results due to lack of optimizations.");
-            Console.WriteLine("  >  Also running tests with reduced intensity for faster debugging.");
-            Console.WriteLine();
-        }
+        if (ACTIVE_DEBUG)
+            Console.WriteLine("WARNING: Debug mode is active. Performance results may not be accurate. Also reducing test intensity to 1/10th.\n");
+        else if (DEBUG_BUILD)
+            Console.WriteLine("WARNING: Non-release compiled version may not produce realistic results due to lack of optimizations.\n");
+        else if (OPTIMIZATIONS_OFF)
+            Console.WriteLine("WARNING: Optimizations are disabled. Performance results may not be accurate.\n");
 
         for (int i = 0; i < TEST_COUNT; i++)
         {
@@ -144,17 +165,25 @@ class Test_Program
         string fileNameBase = Environment.Is64BitProcess ? "Results64bit" : "Results32bit";
         string fileName;
         // If in debug mode, add _debug to the filename
-        if (Debugger.IsAttached)
+        if (ACTIVE_DEBUG || DEBUG_BUILD)
             fileNameBase += "_debug";
 
         fileName = $"{fileNameBase}.json";
 
-        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(List<Result>));
+        // Create FinalResults object to store all results
+        AllResultsInfo finalResults = new AllResultsInfo
+        {
+            Results = resultList,
+            OptimizationsDisabled = OPTIMIZATIONS_OFF,
+            DebugMode = DEBUG_BUILD || ACTIVE_DEBUG
+        };
+
+        DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(AllResultsInfo));
 
         using (FileStream fs = new FileStream(fileName, FileMode.Create))
         using (XmlDictionaryWriter writer = JsonReaderWriterFactory.CreateJsonWriter(fs, Encoding.UTF8, true, true, "  "))
         {
-            ser.WriteObject(writer, resultList);
+            ser.WriteObject(writer, finalResults);
         }
     }
 
