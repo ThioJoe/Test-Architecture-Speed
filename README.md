@@ -26,13 +26,11 @@ You can use the `Results-Comparer.exe` tool to autuomatically read the json resu
 
 ## Screenshots
 
-#### Running the Tests
-<p align="center">
+<p align="center"> 
 <img width="484" alt="image" src="https://github.com/user-attachments/assets/71541bc9-c7fc-4e22-a6d7-03714714e361">
 </p>
 
-#### Results Comparison Tool
-<p align="center">
+<p align="center"> 
 <img width="777" alt="image" src="https://github.com/user-attachments/assets/27b3d9f6-f975-4e7c-8c07-0ac0d305ff33">
 </p>
 
