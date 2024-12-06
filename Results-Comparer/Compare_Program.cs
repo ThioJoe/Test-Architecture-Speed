@@ -163,6 +163,11 @@ namespace Results_Comparer
 
                     (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: userPath, searchSubDirectories: false);
 
+                    if (_x64Path == null || _x86Path == null)
+                    {
+                        Console.WriteLine("Results files not found in the specified directory.");
+                        return null;
+                    }
                 }
             }
 
@@ -259,6 +264,7 @@ namespace Results_Comparer
                     })
                     .ToList();
             }
+            // ------------------ End of local function ------------------
 
             List<TestResult> x64TestResults = GetAverageResultsList(x64Results);
             List<TestResult> x86TestResults = GetAverageResultsList(x86Results);
@@ -266,11 +272,17 @@ namespace Results_Comparer
             // Print file locations
             Console.WriteLine("x64 results file: {0}", x64Path);
             Console.WriteLine("x86 results file: {0}", x86Path);
+
+            if (usingDebugFiles)
+            {
+                Console.WriteLine("\nWARNING: Using results from a debug session or debug version of binaries - results may not be realistic.");
+            }
+
             Console.WriteLine("\n\n");
 
-            // Print table header
+            // Print table header with centered text
             Console.WriteLine("{0} | {1} | {2} | {3} | {4}",
-                "Test Name".PadLeft((30 + 9) / 2).PadRight(30),    // (30 + 9) / 2 = 19.5 -> 19 spaces before
+                "Test Name".PadLeft((30 + 9) / 2).PadRight(30),
                 "x64 Avg".PadLeft(8 + (16 - 8) / 2).PadRight(16),
                 "x86 Avg".PadLeft(8 + (16 - 8) / 2).PadRight(16),
                 "Winner".PadLeft(7 + (15 - 7) / 2).PadRight(15),
@@ -284,7 +296,7 @@ namespace Results_Comparer
                 "x86".PadLeft(3 + (6 - 3) / 2).PadRight(6),           // Center in 6 chars
                 "".PadRight(20));
 
-            // Separator line remains the same
+            // Separator line
             Console.WriteLine("{0,-30} | {1,16} | {2,16} | {3,6} | {4,6} | {5,20}",
                 new string('-', 30),
                 new string('-', 16),
