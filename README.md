@@ -47,3 +47,18 @@ You can use the `Results-Comparer.exe` tool to autuomatically read the json resu
 ```
 Test-Architecture-Speed.exe -iterations 500000 -list_size 5000 -tree_size 50000 -test_intensity 0.5 -test_count 5
 ```
+
+## How To Compile:
+
+### Requirements:
+ - Only requires Visual Studio 2022
+   - At the moment there are no external dependencies beyond the .NET Framework 4.8 built into windows (no need to download anything extra, install any Nuget packages, etc)
+
+### Instructions:
+1. Open the "Solution" file (`Test-Architecture-Speed.sln`) with Visual Studio 2022
+   - The entire solution/project is included with the repo, so after opening it should be ready to compile and run immediately after opening it
+2. Choose the "Release" build configuration mode for actual testing. The debug compilation mode doesn't use compiling optimizations and won't give accurate results.
+   - However for development and testing the code itself, you can use the Debug mode. It wll also use a shorter version of the tests.
+3. Build both the x86 and x64 version of the binary by selecting each in the dropdown then using: "Build" > "Build Solution"
+   - The comparison tool doesn't need separate x86/x64 versions. It will be automatically compiled and placed in the build/release folder along with the main exes when you build those.
+
