@@ -8,9 +8,11 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
 #nullable enable
-class Test_Program
+public class Test_Program
 {
     private const int ITERATIONS = 1000000;
     private const int LIST_SIZE = 10000;
@@ -85,7 +87,7 @@ class Test_Program
 
     // Class for storing a particular test result for a single run
     [DataContract]
-    private class Result
+    public class Result
     {
         [DataMember]
         public string TestName { get; set; }
@@ -110,7 +112,7 @@ class Test_Program
 
     // ----------------- Main method ---------------------
 
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
         // Show some info about the program
         Console.WriteLine("------------------ Test-Architecture-Speed Tool ------------------");
@@ -155,14 +157,16 @@ class Test_Program
         else if (OPTIMIZATIONS_OFF)
             Console.WriteLine("WARNING: Optimizations are disabled. Performance results may not be accurate.\n");
 
-        for (int i = 0; i < _TEST_COUNT; i++)
-        {
-            Console.WriteLine($"Test run {i + 1}:");
-            RunAllTests(i+1);
-            Console.WriteLine();
-        }
+        //for (int i = 0; i < _TEST_COUNT; i++)
+        //{
+        //    Console.WriteLine($"Test run {i + 1}:");
+        //    RunAllTests(i+1);
+        //    Console.WriteLine();
+        //}
 
-        SaveJsonToFile(ResultsList);
+
+        //SaveJsonToFile(ResultsList);
+        var summary = BenchmarkRunner.Run<Test_Program>();
 
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
@@ -340,7 +344,17 @@ class Test_Program
         }
     }
 
-    static void RunAllTests(int runNum)
+    [Benchmark]
+    public void RunAllTests()
+    {
+        var r = TestLinkedListTraversal();
+        r = TestObjectAllocation();
+        r = TestStringManipulation();
+        r = TestBinaryTreeOperations();
+        r = TestDictionaryOperations();
+    }
+
+    public void RunAllTests(int runNum)
     {
         void AddResult(Result resultVal, string testName)
         {
@@ -445,7 +459,8 @@ class Test_Program
         return (resultStr, result);
     }
 
-    static (string resultStr, Result resultVal) TestLinkedListTraversal()
+    [Benchmark]
+    public (string resultStr, Result resultVal) TestLinkedListTraversal()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -472,7 +487,8 @@ class Test_Program
         return (resultStr, resultVal);
     }
 
-    static (string resultStr, Result resultVal) TestObjectAllocation()
+    [Benchmark]
+    public (string resultStr, Result resultVal) TestObjectAllocation()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -490,7 +506,8 @@ class Test_Program
         return (resultStr, resultVal);
     }
 
-    static (string resultStr, Result resultVal) TestStringManipulation()
+    [Benchmark]
+    public (string resultStr, Result resultVal) TestStringManipulation()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -510,7 +527,8 @@ class Test_Program
         return (resultStr, resultVal);
     }
 
-    static (string resultStr, Result resultVal) TestBinaryTreeOperations()
+    [Benchmark]
+    public (string resultStr, Result resultVal) TestBinaryTreeOperations()
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -537,7 +555,8 @@ class Test_Program
         return (resultStr, resultVal);
     }
 
-    static (string resultStr, Result resultVal) TestDictionaryOperations()
+    [Benchmark]
+    public (string resultStr, Result resultVal) TestDictionaryOperations()
     {
         var stopwatch = Stopwatch.StartNew();
 
