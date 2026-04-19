@@ -9,8 +9,9 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
 
-#nullable enable
 [assembly: DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+
+#nullable enable
 class Test_Program
 {
     private const int ITERATIONS = 1000000;
@@ -61,9 +62,9 @@ class Test_Program
             _test_intensity = test_intensity;
         }
 
-        #if DEBUG
+#if DEBUG
         DEBUG_BUILD = true;
-        #endif
+#endif
 
         // Check if optimizations are disabled to warn user
         var assembly = typeof(Test_Program).Assembly;
@@ -134,8 +135,8 @@ class Test_Program
             }
             Console.WriteLine();
         }
-       
-        
+
+
 
         Console.WriteLine($"Running on {(Environment.Is64BitProcess ? "64-bit" : "32-bit")} process");
         Console.WriteLine($"Pointer size: {Marshal.SizeOf(typeof(IntPtr))} bytes");
@@ -159,7 +160,7 @@ class Test_Program
         for (int i = 0; i < _TEST_COUNT; i++)
         {
             Console.WriteLine($"Test run {i + 1}:");
-            RunAllTests(i+1);
+            RunAllTests(i + 1);
             Console.WriteLine();
         }
 
@@ -190,7 +191,7 @@ class Test_Program
 
             // Trim the - if it hasn't been removed already
             arg = arg.TrimStart('-').TrimStart('/');
-            
+
             // Get the type of the argument. Shouldn't be null here because we've already checked for switches
             Type? argType = validArgsMap[arg];
 
@@ -234,7 +235,7 @@ class Test_Program
                     Console.WriteLine($"Setting {arg} to {val}");
                 }
             }
-            else 
+            else
             {
                 Console.WriteLine($"ERROR: Invalid argument: {arg}");
                 return false;

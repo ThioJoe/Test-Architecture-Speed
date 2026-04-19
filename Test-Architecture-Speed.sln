@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.6.11709.129 insiders
+VisualStudioVersion = 18.6.11709.129
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-Architecture-Speed", "Test-Architecture-Speed.csproj", "{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-CSharp-DotNet48", "Test-CSharp-DotNet48.csproj", "{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Results-Comparer", "Results-Comparer\Results-Comparer.csproj", "{14381933-E153-4EF6-9ACB-AEF797D220BF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test-Cpp", "Test-Cpp\Test-Cpp.vcxproj", "{6417133A-06DD-4245-8610-98EA6B3231F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-CSharp-Dotnet10", "Test-CSharp-Dotnet10\Test-CSharp-Dotnet10.csproj", "{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,12 @@ Global
 		{6417133A-06DD-4245-8610-98EA6B3231F7}.Release|x64.Build.0 = Release|x64
 		{6417133A-06DD-4245-8610-98EA6B3231F7}.Release|x86.ActiveCfg = Release|Win32
 		{6417133A-06DD-4245-8610-98EA6B3231F7}.Release|x86.Build.0 = Release|Win32
+		{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}.Debug|x64.ActiveCfg = Debug|x64
+		{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}.Debug|x86.ActiveCfg = Debug|x86
+		{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}.Release|x64.ActiveCfg = Release|x64
+		{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}.Release|x64.Build.0 = Release|x64
+		{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}.Release|x86.ActiveCfg = Release|x86
+		{DE9EB9BB-767E-4210-BDB5-FBC5E2BF7B4E}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
