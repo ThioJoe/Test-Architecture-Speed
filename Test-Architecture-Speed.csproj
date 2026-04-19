@@ -7,7 +7,7 @@
     <ProjectGuid>{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Test_Architecture_Speed</RootNamespace>
-    <AssemblyName>Test-Architecture-Speed</AssemblyName>
+    <AssemblyName>Test-CSharp</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -18,7 +18,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <AssemblyName>$(AssemblyName)-x64</AssemblyName>
+    <AssemblyName>$(AssemblyName)_x64</AssemblyName>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
@@ -27,8 +27,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <AssemblyName>$(AssemblyName)-x64</AssemblyName>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AssemblyName>$(AssemblyName)_x64</AssemblyName>
+    <OutputPath>Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -38,7 +38,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <AssemblyName>$(AssemblyName)-x86</AssemblyName>
+    <AssemblyName>$(AssemblyName)_x86</AssemblyName>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
@@ -47,8 +47,8 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <AssemblyName>$(AssemblyName)-x86</AssemblyName>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AssemblyName>$(AssemblyName)_x86</AssemblyName>
+    <OutputPath>Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
