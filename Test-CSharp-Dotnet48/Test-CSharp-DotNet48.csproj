@@ -43,7 +43,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <AssemblyName>$(AssemblyName)_x64</AssemblyName>
-    <OutputPath>Release\</OutputPath>
+    <OutputPath>$(SolutionDir)Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -63,7 +63,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <AssemblyName>$(AssemblyName)_x86</AssemblyName>
-    <OutputPath>Release\</OutputPath>
+    <OutputPath>$(SolutionDir)Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>

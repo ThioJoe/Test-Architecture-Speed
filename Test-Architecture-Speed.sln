@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.6.11709.129
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-CSharp-DotNet48", "Test-CSharp-DotNet48.csproj", "{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-CSharp-DotNet48", "Test-CSharp-Dotnet48\Test-CSharp-DotNet48.csproj", "{F1C67D0F-AB03-42FB-8CE0-97A5F372A152}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Results-Comparer", "Results-Comparer\Results-Comparer.csproj", "{14381933-E153-4EF6-9ACB-AEF797D220BF}"
 EndProject

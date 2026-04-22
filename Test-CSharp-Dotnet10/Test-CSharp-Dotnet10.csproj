@@ -6,7 +6,7 @@
     <RootNamespace>Test_CSharp_Dotnet10</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PublishAot>true</PublishAot>
+    <PublishAot>false</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
     <AssemblyName>$(MSBuildProjectName)_$(Platform)</AssemblyName>
     <OutputPath>$(SolutionDir)Release\</OutputPath>
