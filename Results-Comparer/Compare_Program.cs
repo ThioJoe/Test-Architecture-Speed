@@ -76,11 +76,11 @@ namespace Results_Comparer
 
                 if (filePairs.Count > 1)
                 {
-                    Console.WriteLine("\n========================================================================");
+                    Console.WriteLine("\n\n\n=============================================================================================================");
                     Console.WriteLine($"  Comparing pair {pairIndex + 1} of {filePairs.Count}:");
                     Console.WriteLine($"  x64: {Path.GetFileName(x64Path)}");
                     Console.WriteLine($"  x86: {Path.GetFileName(x86Path)}");
-                    Console.WriteLine("========================================================================\n");
+                    Console.WriteLine("-------------------------------------");
                 }
 
                 // Deserialize the json files back into objects using the DataContractJsonSerializer
@@ -270,8 +270,8 @@ namespace Results_Comparer
             List<TestResult> x86TestResults = GetAverageResultsList(x86Results);
 
             // Print file locations
-            Console.WriteLine("x64 results file: {0}", x64Path);
-            Console.WriteLine("x86 results file: {0}", x86Path);
+            //Console.WriteLine("x64 results file: {0}", x64Path);
+            //Console.WriteLine("x86 results file: {0}", x86Path);
 
             if (debug_results)
             {
@@ -282,7 +282,7 @@ namespace Results_Comparer
                 Console.WriteLine("WARNING: Results were obtained with optimizations disabled - results may not be realistic.");
             }
 
-            Console.WriteLine("\n\n");
+            Console.WriteLine();
 
             // Print table header with centered text
             Console.WriteLine("{0} | {1} | {2} | {3} | {4}",
