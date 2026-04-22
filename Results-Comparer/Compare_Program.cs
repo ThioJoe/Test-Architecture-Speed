@@ -16,12 +16,6 @@ namespace Results_Comparer
     {
 
         // Globals
-        public static string x64FileName;
-        public static string x86FileName;
-
-        public static string x64FileName_Alt;
-        public static string x86FileName_Alt;
-
         public static string x64Path;
         public static string x86Path;
 
@@ -67,52 +61,51 @@ namespace Results_Comparer
             Console.WriteLine("----------- Test-Architecture-Speed Results Comparison Tool ----------");
             Console.WriteLine("Compare results from two json files created by Test-Architecture-Speed\n\n");
 
-            // File names
-            x64FileName = "Results64bit.json";
-            x86FileName = "Results32bit.json";
-            // The file names produced if the program was run in debug mode
-            x64FileName_Alt = "Results64bit_debug.json";
-            x86FileName_Alt = "Results32bit_debug.json";
+            var filePairs = DetermineFilePairs();
 
-            var pathsResult = DetermineFilePaths();
-
-            if (pathsResult == null)
+            if (filePairs == null || filePairs.Count == 0)
             {
                 Console.WriteLine("Press any key to exit.");
                 Console.ReadLine();
                 return;
             }
-            else
-            {
-                (x64Path, x86Path) = pathsResult.Value;
-            }
 
-            // Deserialize the json files back into objects using the DataContractJsonSerializer
-            AllResultsInfo x64ResultsInfo;
-            AllResultsInfo x86ResultsInfo;
-
-            using (FileStream fs = new FileStream(x64Path, FileMode.Open))
+            for (int pairIndex = 0; pairIndex < filePairs.Count; pairIndex++)
             {
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AllResultsInfo));
-                x64ResultsInfo = (AllResultsInfo)serializer.ReadObject(fs);
-            }
+                (x64Path, x86Path) = filePairs[pairIndex];
 
-            using (FileStream fs = new FileStream(x86Path, FileMode.Open))
-            {
-                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AllResultsInfo));
-                x86ResultsInfo = (AllResultsInfo)serializer.ReadObject(fs);
-            }
+                if (filePairs.Count > 1)
+                {
+                    Console.WriteLine("\n========================================================================");
+                    Console.WriteLine($"  Comparing pair {pairIndex + 1} of {filePairs.Count}:");
+                    Console.WriteLine($"  x64: {Path.GetFileName(x64Path)}");
+                    Console.WriteLine($"  x86: {Path.GetFileName(x86Path)}");
+                    Console.WriteLine("========================================================================\n");
+                }
 
-            // If debug files not already detected, check if the results are from a debug session using info stored in results files
-            if (!usingDebugFiles)
-            {
+                // Deserialize the json files back into objects using the DataContractJsonSerializer
+                AllResultsInfo x64ResultsInfo;
+                AllResultsInfo x86ResultsInfo;
+
+                using (FileStream fs = new FileStream(x64Path, FileMode.Open))
+                {
+                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AllResultsInfo));
+                    x64ResultsInfo = (AllResultsInfo)serializer.ReadObject(fs);
+                }
+
+                using (FileStream fs = new FileStream(x86Path, FileMode.Open))
+                {
+                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AllResultsInfo));
+                    x86ResultsInfo = (AllResultsInfo)serializer.ReadObject(fs);
+                }
+
                 usingDebugFiles = x64ResultsInfo.DebugMode || x86ResultsInfo.DebugMode;
-            }
-            
-            bool optimizations_off = x64ResultsInfo.OptimizationsDisabled || x86ResultsInfo.OptimizationsDisabled;
 
-            // Compare the results
-            CompareResults(x64Results: x64ResultsInfo.Results, x86Results: x86ResultsInfo.Results, optimizations_off: optimizations_off, debug_results: usingDebugFiles);
+                bool optimizations_off = x64ResultsInfo.OptimizationsDisabled || x86ResultsInfo.OptimizationsDisabled;
+
+                // Compare the results
+                CompareResults(x64Results: x64ResultsInfo.Results, x86Results: x86ResultsInfo.Results, optimizations_off: optimizations_off, debug_results: usingDebugFiles);
+            }
 
             Console.WriteLine("\n\nPress any key to exit");
             Console.ReadLine();
@@ -122,99 +115,83 @@ namespace Results_Comparer
         // -------------------------- Scaffolding / Results files detection functions --------------------------
 
         // Determine root path with the results files. Tries to see if the program is running from the solution directory, otherwise prompts user for folder
-        static (string x64PathStr, string x86PathStr)? DetermineFilePaths()
+        static List<(string x64PathStr, string x86PathStr)> DetermineFilePairs()
         {
-            // -------------- Local function to check both regular and debug file names --------------
-            (string x64Path_local, string x86Path_local) SearchBothRegularAndDebugFileNames(string _rootPath, bool searchSubDirectories)
-            {
-                // Check using regular file names first
-                string x64Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x64FileName, searchSubDirectories: searchSubDirectories);
-                string x86Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x86FileName, searchSubDirectories: searchSubDirectories);
-                // If the files are not found, try the debug file names
-                if (x64Path_local == null || x86Path_local == null)
-                {
-                    x64Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x64FileName_Alt, searchSubDirectories: searchSubDirectories);
-                    x86Path_local = SearchForFileInDirectory(rootPath: _rootPath, fileName: x86FileName_Alt, searchSubDirectories: searchSubDirectories);
-                    usingDebugFiles = true;
-                }
-                return (x64Path_local, x86Path_local);
-            }
-            // -------------- End of local function --------------
-
             string rootPath;
-            bool isUserEnteredPath = false; // We don't want to list all the files in the directory if the user entered the path since we don't know the size of the directory
-            string _x64Path;
-            string _x86Path;
+            bool isUserEnteredPath = false;
+            List<(string, string)> pairs;
 
             // First look in the current directory
-            (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: Directory.GetCurrentDirectory(), searchSubDirectories: false);
+            pairs = FindFilePairsInDirectory(Directory.GetCurrentDirectory(), searchSubDirectories: false);
 
-            // If the files are still not found, check for the solution / repository structure
-            if (_x64Path == null || _x86Path == null)
+            if (pairs.Count == 0)
             {
-                usingDebugFiles = false;
-
                 var pathResult = DetermineProjectRootPath();
-                if (pathResult == null) // This means a valid path was not auto-detected, AND the user did not enter a valid path, so we should exit
-                {
+                if (pathResult == null)
                     return null;
-                }
-                else
-                {
-                    rootPath = pathResult.Value.rootPath;
-                    isUserEnteredPath = pathResult.Value.userEnteredPath;
-                }
 
-                (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: rootPath, searchSubDirectories: !isUserEnteredPath);
+                rootPath = pathResult.Value.rootPath;
+                isUserEnteredPath = pathResult.Value.userEnteredPath;
+
+                pairs = FindFilePairsInDirectory(rootPath, searchSubDirectories: !isUserEnteredPath);
             }
 
-            // If the files are still not found, if it was an auto-detected path, then prompt the user for the path, otherwise give up
-            if (_x64Path == null || _x86Path == null)
+            if (pairs.Count == 0)
             {
-                usingDebugFiles = false;
                 if (isUserEnteredPath)
                 {
                     Console.WriteLine("Results files not found in the specified directory.");
                     return null;
                 }
-                // Prompt the user for the path
-                else
+
+                string userPath = PromptPath();
+                if (userPath == null)
+                    return null;
+
+                pairs = FindFilePairsInDirectory(userPath, searchSubDirectories: false);
+
+                if (pairs.Count == 0)
                 {
-                    string userPath = PromptPath();
-                    if (userPath == null)
-                        return null;
-
-                    (_x64Path, _x86Path) = SearchBothRegularAndDebugFileNames(_rootPath: userPath, searchSubDirectories: false);
-
-                    if (_x64Path == null || _x86Path == null)
-                    {
-                        Console.WriteLine("Results files not found in the specified directory.");
-                        return null;
-                    }
+                    Console.WriteLine("Results files not found in the specified directory.");
+                    return null;
                 }
             }
 
-            return (_x64Path, _x86Path);
+            return pairs;
         }
 
-        static string SearchForFileInDirectory(string rootPath, string fileName, bool searchSubDirectories)
+        // Finds all matched x64/x86 result file pairs in a directory, grouped by their language/framework suffix.
+        // Files are named Results64bit[_suffix].json and Results32bit[_suffix].json where suffix identifies the language.
+        static List<(string x64File, string x86File)> FindFilePairsInDirectory(string rootPath, bool searchSubDirectories)
         {
-            SearchOption option;
-            if (searchSubDirectories)
+            SearchOption option = searchSubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+            string[] x64Files = Directory.GetFiles(rootPath, "Results64bit*.json", option);
+            string[] x86Files = Directory.GetFiles(rootPath, "Results32bit*.json", option);
+
+            // Build a lookup from suffix -> x86 file path
+            // Suffix is everything after "Results32bit" and before ".json" (e.g. "_c++", "_DotNet48", "")
+            var x86BySuffix = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string file in x86Files)
             {
-                option = SearchOption.AllDirectories;
-            }
-            else
-            {
-                option = SearchOption.TopDirectoryOnly;
+                string name = Path.GetFileNameWithoutExtension(file); // e.g. "Results32bit_c++"
+                string suffix = name.Substring("Results32bit".Length);  // e.g. "_c++" or ""
+                x86BySuffix[suffix] = file;
             }
 
-            string[] files = Directory.GetFiles(rootPath, fileName, option);
-            if (files.Length == 0)
+            var pairs = new List<(string, string)>();
+            foreach (string x64File in x64Files)
             {
-                return null;
+                string name = Path.GetFileNameWithoutExtension(x64File);
+                string suffix = name.Substring("Results64bit".Length);
+
+                if (x86BySuffix.TryGetValue(suffix, out string x86File))
+                {
+                    pairs.Add((x64File, x86File));
+                }
             }
-            return files[0];
+
+            return pairs;
         }
 
         // Used to determine if the program is running from the solution directory / repository folder structure

@@ -326,7 +326,7 @@ static std::string EscapeJson(const std::string& s)
 static void SaveJsonToFile(const std::vector<Result>& results)
 {
     bool is64 = (sizeof(void*) == 8);
-    std::string fileNameBase = is64 ? "Results64bit" : "Results32bit";
+    std::string fileNameBase = std::string(is64 ? "Results64bit" : "Results32bit") + "_c++";
 
 #ifndef NDEBUG
     fileNameBase += "_debug";

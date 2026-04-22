@@ -381,7 +381,7 @@ class Test_Program
 
     private static void SaveJsonToFile(List<Result> resultList)
     {
-        string fileNameBase = Environment.Is64BitProcess ? "Results64bit" : "Results32bit";
+        string fileNameBase = (Environment.Is64BitProcess ? "Results64bit" : "Results32bit")  + "_DotNet48"; ;
         string fileName;
         // If in debug mode, add _debug to the filename
         if (ACTIVE_DEBUG || DEBUG_BUILD)
